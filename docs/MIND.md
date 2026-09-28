@@ -112,14 +112,25 @@ fun interface MindProvider {
 }
 ```
 
-The token supply is TokenX, the SDK that streams tokens to applications and
-keeps the logistics (keys, models, quotas) out of the consumer. TokenX
-implements `MindProvider`; the app attaches it to a session
-(`session.provider = tokenXProvider`) or to a scene
-(`simulation.mindProvider`). JsonMind's ledger is the document's own
-allowance on top of whatever TokenX grants: a scene author can cap a bush at
-20 000 tokens without knowing where they come from.
+The token supply is [TokenX](https://github.com/bclnet/TokenX), the library
+that keeps the logistics (providers, keys, models, quotas) on the app's side
+of a client/server split in the same process. TokenX knows nothing about
+minds; the adapter is JsonMind's: `TokenXMindProvider` (target
+`JsonMindTokenX`, module `jsonmind-tokenx`) opens one TokenX session per
+mind, named after the actor, on the `character` profile, and streams the
+reply text into the mind:
 
-Shipped providers: `CannedMindProvider` (the rules, no tokens) and
+```swift
+let provider = TokenXMindProvider(client: TokenClient(broker: tokenServer))
+session.provider = provider          // or simulation.mindProvider = provider in a scene
+```
+
+JsonMind's ledger is the document's own allowance on top of whatever TokenX
+grants: a scene author can cap a bush at 20 000 tokens without knowing where
+they come from, and TokenX's daily cap and usage rows stay the app's business.
+When TokenX refuses (no provider configured, cap reached), the canned rules
+answer, as for any provider failure.
+
+Shipped providers: `CannedMindProvider` (the rules, no tokens),
 `CompletionMindProvider` (adapts a request/response function that returns a
-whole reply).
+whole reply) and `TokenXMindProvider`.

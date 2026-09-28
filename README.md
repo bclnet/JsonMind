@@ -4,9 +4,9 @@ Personalities for JsonUI documents. A *mind* is JSON: a persona, the senses
 it perceives, the commands it may emit, a token budget, the events that wake
 it and canned rules for when no model is attached. JsonMind runs the turn:
 budget and cooldown, prompt assembly, streaming the reply into commands,
-history. Where the tokens come from is a `MindProvider`, which
-[TokenX](https://github.com/bclnet) supplies; JsonMind never sees keys or
-model names.
+history. Where the tokens come from is a `MindProvider`; the
+`TokenXMindProvider` adapter gets them from [TokenX](https://github.com/bclnet/TokenX),
+and JsonMind never sees keys or model names.
 
 [JsonScene](https://github.com/bclnet/JsonScene) gives minds to 3D actors;
 the same library can drive an assistant on a JsonUI form.
@@ -29,22 +29,24 @@ vocabulary, how a turn runs and how a provider plugs in.
 | platform | package | contents |
 | --- | --- | --- |
 | iOS, macOS | `JsonMind` (Swift package, `ios/`) | `Mind`, `ActorCommand` / `ActorScript`, `MindPrompt` / `MindReply` / `MindReplyAssembler`, `TokenLedger`, `MindSession`, `MindProvider`, `CannedMindProvider`, `CompletionMindProvider` |
-| Android, JVM | `jsonmind` (Kotlin, `android/`) | the same, under `com.bclnet.jsonmind` |
+| iOS, macOS | `JsonMindTokenX` | `TokenXMindProvider`: the provider backed by a [TokenX](https://github.com/bclnet/TokenX) client |
+| Android, JVM | `jsonmind`, `jsonmind-tokenx` (Kotlin, `android/`) | the same, under `com.bclnet.jsonmind` |
 
-Both depend on JsonUI's core (`JsonValue` / `JsonElement`, actions, fragments).
+The core depends on JsonUI's core (`JsonValue` / `JsonElement`, actions,
+fragments); only the adapter depends on TokenX.
 
 ## Using it
 
 ```swift
 let mind = Mind(try JsonValue.parse(json))
-let session = MindSession(actorId: "bush", mind: mind, provider: tokenX)   // tokenX: MindProvider
+let session = MindSession(actorId: "bush", mind: mind, provider: TokenXMindProvider(broker: tokenServer))
 session.onCommand = { command in stage.perform(command) }               // streamed as they complete
 let prompt = session.prompt(event: "tap", senses: ["userDistance": 1.2])
 session.respond(to: prompt) { result in /* the full, filtered command list */ }
 ```
 
 ```kotlin
-val session = MindSession("bush", Mind.parse(json), tokenX)
+val session = MindSession("bush", Mind.parse(json), TokenXMindProvider(tokenServer))
 session.onCommand = { stage.perform(it) }
 session.respond(session.prompt("tap", senses = mapOf("userDistance" to jsonOf(1.2)))) { result -> }
 ```
@@ -58,9 +60,9 @@ Minds are shared as JsonUI fragments (`examples/minds/`):
 ## Building
 
 ```
-swift test                                   # 15 tests, Linux or macOS
-JSONUI_PATH=/path/to/JsonUI swift test       # against a local JsonUI checkout
-git submodule update --init && cd android && ./gradlew build   # 15 JVM tests
+swift test                                   # 18 tests, Linux or macOS
+JSONUI_PATH=/path/to/JsonUI TOKENX_PATH=/path/to/TokenX swift test   # against local checkouts
+git submodule update --init && cd android && ./gradlew build   # 18 JVM tests
 ```
 
 ## Layout
@@ -68,11 +70,14 @@ git submodule update --init && cd android && ./gradlew build   # 15 JVM tests
 ```
 Package.swift            Swift manifest (root, so SwiftPM can add the package by URL)
 ios/Sources/JsonMind     the library
-ios/Tests/JsonMindTests  tests
+ios/Sources/JsonMindTokenX  the TokenX adapter
+ios/Tests/                tests
 android/jsonmind         Kotlin/JVM module with tests
+android/jsonmind-tokenx  the TokenX adapter
 docs/MIND.md             the format and the provider contract
 examples/minds/          mind fragments (the singing bush, Snoopy)
 third_party/JsonUI       JsonUI submodule
+third_party/TokenX       TokenX submodule
 ```
 
 ## License

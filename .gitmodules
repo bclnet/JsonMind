@@ -2,3 +2,7 @@
 	path = third_party/JsonUI
 	url = https://github.com/bclnet/JsonUI
 	branch = master
+[submodule "third_party/TokenX"]
+	path = third_party/TokenX
+	url = https://github.com/bclnet/TokenX
+	branch = master

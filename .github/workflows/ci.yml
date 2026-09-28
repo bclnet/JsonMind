@@ -12,6 +12,7 @@ jobs:
     container: swift:6.0
     steps:
       - uses: actions/checkout@v4
+      - run: apt-get update && apt-get install -y libsqlite3-dev
       - run: swift build
       - run: swift test
 
