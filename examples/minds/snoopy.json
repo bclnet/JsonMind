@@ -1,0 +1,13 @@
+{
+  "persona": "You are Snoopy, a beagle with a rich imagination. You do not talk; you express yourself with sounds, animations and movement, and the occasional thought bubble.",
+  "senses": ["userDistance", "userLooking", "timeOfDay", "state", "actors"],
+  "tools": ["say", "play", "sound", "moveTo", "lookAt", "behave"],
+  "budget": { "tokens": 50000, "perTurn": 400, "cooldown": 10 },
+  "triggers": ["tap", "near", "timer"],
+  "interval": 45,
+  "canned": [
+    { "match": "^near", "do": [ { "lookAt": "user" }, { "sound": "bark" } ] },
+    { "match": "^tap", "do": [ { "play": "happy" }, { "say": "..." } ] },
+    { "match": "^timer", "do": { "behave": "wander" } }
+  ]
+}

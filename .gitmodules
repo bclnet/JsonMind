@@ -1,0 +1,4 @@
+[submodule "third_party/JsonUI"]
+	path = third_party/JsonUI
+	url = https://github.com/bclnet/JsonUI
+	branch = claude/ios-android-form-libraries-2jjfw5
